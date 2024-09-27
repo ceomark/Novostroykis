@@ -29,3 +29,11 @@ export default {
   }
 };
 </script>
+<script>
+export default {
+  name: "PropertyList",  // Измени на соответствующее имя компонента
+  mounted() {
+    console.log("Компонент Home загружен");
+  }
+};
+</script>

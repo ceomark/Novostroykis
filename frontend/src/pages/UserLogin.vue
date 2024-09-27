@@ -40,3 +40,11 @@ export default {
   }
 };
 </script>
+<script>
+export default {
+  name: "UserLogin",  // Измени на соответствующее имя компонента
+  mounted() {
+    console.log("Компонент Home загружен");
+  }
+};
+</script>

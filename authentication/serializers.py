@@ -39,3 +39,24 @@ class PasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ('saved_searches', 'favorite_properties')
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(required=False)
+    email = serializers.EmailField(required=True)  # Разрешить изменение email
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password', 'user_type', 'profile')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+        email = validated_data.get('email', instance.email)
+        instance.email = email
+        instance.save()
+        return instance

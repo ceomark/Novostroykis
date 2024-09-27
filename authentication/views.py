@@ -19,7 +19,14 @@ from .serializers import PasswordChangeSerializer
 from rest_framework import generics
 from .models import UserProfile
 from .serializers import UserProfileSerializer
+from django.contrib.auth import get_user_model
+from rest_framework import permissions
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render
 
+
+
+User = get_user_model()
 
 # Регистрация пользователя
 class RegisterView(generics.CreateAPIView):
@@ -181,3 +188,47 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile
+
+
+
+
+# View для обновления профиля
+class UpdateUserProfileView(generics.UpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile
+
+# View для удаления профиля
+class DeleteUserProfileView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.delete()
+        return Response({"detail": "User profile deleted."})
+
+
+# Представление для получения информации админской панели
+class AdminDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        if request.user.groups.filter(name='Administrators').exists():
+            return Response({'msg': 'Добро пожаловать в админ панель'})
+        return Response({'error': 'Нет прав доступа'}, status=status.HTTP_403_FORBIDDEN)
+
+# Представление для получения информации модераторской панели
+class ModeratorDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        if request.user.groups.filter(name='Moderators').exists():
+            return Response({'msg': 'Добро пожаловать в модераторскую панель'})
+        return Response({'error': 'Нет прав доступа'}, status=status.HTTP_403_FORBIDDEN)

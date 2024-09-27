@@ -7,4 +7,5 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('properties/', include('properties.urls')),
     path('', TemplateView.as_view(template_name='index.html'), name='home'),  # Главная страница
+    path('accounts/', include('allauth.urls')),
 ]

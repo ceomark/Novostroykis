@@ -46,3 +46,11 @@ export default {
   }
 };
 </script>
+<script>
+export default {
+  name: "UserRegister",  // Измени на соответствующее имя компонента
+  mounted() {
+    console.log("Компонент Home загружен");
+  }
+};
+</script>
