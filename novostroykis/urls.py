@@ -8,5 +8,6 @@ urlpatterns = [
     path('properties/', include('properties.urls')),
     path('', TemplateView.as_view(template_name='index.html'), name='home'),  # Главная страница
     path('accounts/', include('allauth.urls')),
+    path('api/', include('properties.api_urls')),  # Подключение api маршрутов для properties
     path('', include('reviews.urls')),  # для приложения reviews
 ]

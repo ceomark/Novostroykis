@@ -23,7 +23,7 @@ export default {
   },
   methods: {
     fetchProperty() {
-      axios.get(`/api/properties/${this.id}/`)
+      axios.get(`${process.env.VUE_APP_API_URL}/api/properties/${this.$route.params.id}/`)
         .then(response => {
           this.property = response.data;
         })

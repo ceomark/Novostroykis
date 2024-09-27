@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Базовая конфигурация axios
+// Используем переменные окружения для конфигурации baseURL
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',
+  baseURL: process.env.VUE_APP_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ const apiClient = axios.create({
 
 // Добавление токена в заголовки при каждом запросе
 apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');  // Предполагается, что токен хранится в localStorage
+  const token = localStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

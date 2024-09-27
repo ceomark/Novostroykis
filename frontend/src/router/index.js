@@ -4,7 +4,6 @@ import HomePage from '@/pages/HomePage';
 import UserRegister from '@/pages/UserRegister';
 import UserLogin from '@/pages/UserLogin';
 import UserProfile from '@/pages/UserProfile';
-import PropertyList from '@/pages/PropertyList';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ModeratorDashboard from '@/pages/ModeratorDashboard';
 import PropertyList from '@/components/properties/PropertyList';
@@ -29,21 +28,20 @@ const requireAuth = (to, from, next) => {
 export default new Router({
   mode: 'history',
   routes: [
-    { path: '/', component: HomePage },
-    { path: '/register', component: UserRegister },
-    { path: '/login', component: UserLogin },
-    { path: '/profile', component: UserProfile, beforeEnter: requireAuth },  // Проверка авторизации перед входом в профиль
-    { path: '/properties', component: PropertyList },
+    { path: '/', component: HomePage }, // Главная страница
+    { path: '/register', component: UserRegister }, // Страница регистрации
+    { path: '/login', component: UserLogin }, // Страница логина
+    { path: '/profile', component: UserProfile, beforeEnter: requireAuth },  // Профиль пользователя с проверкой авторизации
     { path: '/admin-dashboard', component: AdminDashboard, beforeEnter: requireAuth }, // Проверка авторизации
     { path: '/moderator-dashboard', component: ModeratorDashboard, beforeEnter: requireAuth }, // Проверка авторизации
-    { path: '*', redirect: '/' }
-    { path: '/properties', component: PropertyList }, // Список объектов недвижимости
-    { path: '/properties/:id', component: PropertyDetail, props: true }, // Детальная страница объекта
-    { path: '/developers', component: DeveloperList }, // Список застройщиков
-    { path: '/developers/:id', component: DeveloperDetail, props: true }, // Детальная страница застройщика
-    { path: '/properties/:id/reviews', component: ReviewList, props: true }, // Список отзывов к объекту
-    { path: '/developers/:id/reviews', component: ReviewList, props: true }, // Список отзывов к застройщику
-    { path: '/properties/:id/reviews/add', component: ReviewForm, props: true }, // Добавление отзыва к объекту
-    { path: '/developers/:id/reviews/add', component: ReviewForm, props: true }, // Добавление отзыва к застройщику
+    { path: '*', redirect: '/' }, // Перенаправление всех неизвестных маршрутов на главную страницу
+    { path: '/novostroyki', component: PropertyList }, // Список объектов недвижимости
+    { path: '/novostroyki/:id', component: PropertyDetail, props: true }, // Детальная страница объекта
+    { path: '/zastroyshiki', component: DeveloperList }, // Список застройщиков
+    { path: '/zastroyshiki/:id', component: DeveloperDetail, props: true }, // Детальная страница застройщика
+    { path: '/novostroyki/:id/reviews', component: ReviewList, props: true }, // Список отзывов к объекту
+    { path: '/zastroyshiki/:id/reviews', component: ReviewList, props: true }, // Список отзывов к застройщику
+    { path: '/novostroyki/:id/reviews/add', component: ReviewForm, props: true }, // Добавление отзыва к объекту
+    { path: '/zastroyshiki/:id/reviews/add', component: ReviewForm, props: true }, // Добавление отзыва к застройщику
   ]
 });

@@ -1,10 +1,13 @@
 <template>
   <div>
-    <h1>Список объектов недвижимости</h1>
-    <div v-for="property in properties" :key="property.id">
-      <router-link :to="`/properties/${property.id}`">{{ property.name }}</router-link>
-      <p>{{ property.address }}</p>
-    </div>
+    <h1>Список новостроек</h1>
+    <ul v-if="properties.length">
+      <!-- Добавляем ссылку на детальный вид -->
+      <li v-for="property in properties" :key="property.id">
+        <router-link :to="`/properties/${property.id}`">{{ property.name }}</router-link>
+      </li>
+    </ul>
+    <p v-else>Нет данных для отображения.</p>
   </div>
 </template>
 
@@ -12,24 +15,21 @@
 import axios from 'axios';
 
 export default {
+  name: 'PropertyList',
   data() {
     return {
-      properties: []
+      properties: [],
     };
   },
-  created() {
-    this.fetchProperties();
+  mounted() {
+    // Отправляем запрос на сервер, чтобы получить список объектов недвижимости
+    axios.get('http://localhost:8000/api/properties/')
+      .then(response => {
+        this.properties = response.data;
+      })
+      .catch(error => {
+        console.error('Ошибка при получении данных:', error);
+      });
   },
-  methods: {
-    fetchProperties() {
-      axios.get('/api/properties/')
-        .then(response => {
-          this.properties = response.data;
-        })
-        .catch(error => {
-          console.error("Error fetching properties:", error);
-        });
-    }
-  }
 };
 </script>

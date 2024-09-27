@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import (
+from .views import ( # Импортируем все представления из views.py
     RegisterView, LoginView, EmailVerificationView, VerifyEmailView, LogoutView,
     RequestPasswordResetView, ChangePasswordView, UserProfileView, UpdateUserProfileView,
     DeleteUserProfileView, AdminDashboardView, ModeratorDashboardView

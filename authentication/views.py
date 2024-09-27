@@ -22,6 +22,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
+from django.contrib.auth import authenticate
+
 
 # Получение текущей модели пользователя
 User = get_user_model()
@@ -50,8 +52,8 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Требуется аутентификация
 
     def get_object(self):
-        # Возвращаем профиль текущего пользователя
-        return self.request.user.profile
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
 
 
 # Вход пользователя в систему
