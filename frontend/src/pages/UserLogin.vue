@@ -42,7 +42,7 @@ export default {
 </script>
 <script>
 export default {
-  name: "UserLogin",  // Измени на соответствующее имя компонента
+  name: "UserLogin",
   mounted() {
     console.log("Компонент Home загружен");
   }

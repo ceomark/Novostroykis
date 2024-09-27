@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <h1>Привет, это интеграция Vue.js и Django!</h1>
+    <h1>Привет, это интеграция Vue.js и Django! </h1>
   </div>
 </template>
 

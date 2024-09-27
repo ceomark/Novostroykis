@@ -14,7 +14,6 @@ from .serializers import UserSerializer, UserLoginSerializer, EmailVerificationS
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from .serializers import PasswordChangeSerializer
 from rest_framework import generics
 from .models import UserProfile
@@ -24,17 +23,20 @@ from rest_framework import permissions
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
 
-
-
+# Получение текущей модели пользователя
 User = get_user_model()
 
-# Регистрация пользователя
+# Регистрация нового пользователя
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (AllowAny,)
-    serializer_class = UserSerializer
+    permission_classes = (AllowAny,)  # Разрешаем доступ всем пользователям
+    serializer_class = UserSerializer  # Указываем используемый сериализатор
 
     def create(self, request, *args, **kwargs):
+        """
+        Метод для создания нового пользователя.
+        Сериализатор обрабатывает данные и создаёт запись в базе.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
@@ -42,11 +44,25 @@ class RegisterView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-# Логин пользователя
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = UserProfile.objects.all()  # Указываем выборку данных
+    serializer_class = UserProfileSerializer  # Используемый сериализатор
+    permission_classes = [permissions.IsAuthenticated]  # Требуется аутентификация
+
+    def get_object(self):
+        # Возвращаем профиль текущего пользователя
+        return self.request.user.profile
+
+
+# Вход пользователя в систему
 class LoginView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
+        """
+        Обработка запроса на вход. Проверяет email и пароль.
+        Возвращает JWT токены при успешной аутентификации.
+        """
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = authenticate(email=serializer.validated_data['email'], password=serializer.validated_data['password'])
@@ -64,11 +80,14 @@ class LoginView(APIView):
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# Подтверждение email
+# Запрос на подтверждение email
 class EmailVerificationView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
+        """
+        Генерация и отправка ссылки для подтверждения email на почту пользователя.
+        """
         user = User.objects.get(email=request.data['email'])
         token = RefreshToken.for_user(user).access_token
         verification_link = f"http://{get_current_site(request).domain}/auth/verify-email/{user.id}/{token}/"
@@ -81,11 +100,14 @@ class EmailVerificationView(APIView):
         return Response({'msg': 'Ссылка подтверждения отправлена.'}, status=status.HTTP_200_OK)
 
 
-# Подтверждение токена email
+# Проверка токена для подтверждения email
 class VerifyEmailView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, uid, token):
+        """
+        Проверка переданного токена и подтверждение email.
+        """
         try:
             user_id = force_str(urlsafe_base64_decode(uid))
             user = User.objects.get(id=user_id)
@@ -100,11 +122,14 @@ class VerifyEmailView(APIView):
             return Response({'error': 'Некорректный запрос'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# Представление для выхода из системы
+# Логика выхода пользователя из системы
 class LogoutView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
+        """
+        Выход пользователя, удаление токена из белого списка.
+        """
         try:
             refresh_token = request.data.get("refresh")
             token = RefreshToken(refresh_token)
@@ -114,11 +139,15 @@ class LogoutView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Запрос на сброс пароля
 class RequestPasswordResetView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
+        """
+        Генерация и отправка ссылки для сброса пароля на почту пользователя.
+        """
         email = request.data.get('email')
         try:
             user = User.objects.get(email=email)
@@ -136,8 +165,7 @@ class RequestPasswordResetView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'Пользователь с таким email не найден'}, status=status.HTTP_404_NOT_FOUND)
 
-
-# Сброс пароля (подтверждение)
+# Подтверждение сброса пароля
 class PasswordResetConfirmView(APIView):
     permission_classes = (AllowAny,)
 
@@ -158,9 +186,9 @@ class PasswordResetConfirmView(APIView):
 
 
 class ChangePasswordView(generics.UpdateAPIView):
-    serializer_class = PasswordChangeSerializer
-    model = User
-    permission_classes = (IsAuthenticated,)
+    serializer_class = PasswordChangeSerializer  # Используемый сериализатор
+    model = User  # Модель пользователя
+    permission_classes = (IsAuthenticated,)  # Требуется аутентификация
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -182,53 +210,49 @@ class ChangePasswordView(generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserProfileView(generics.RetrieveUpdateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-
-    def get_object(self):
-        return self.request.user.profile
-
-
-
-
-# View для обновления профиля
+# Представление для обновления профиля пользователя
 class UpdateUserProfileView(generics.UpdateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = UserProfile.objects.all()  # Выборка профилей пользователей
+    serializer_class = UserProfileSerializer  # Сериализатор профиля пользователя
+    permission_classes = [permissions.IsAuthenticated]  # Требуется аутентификация
 
     def get_object(self):
+        # Возвращает профиль текущего пользователя
         return self.request.user.profile
 
-# View для удаления профиля
+
+# Представление для удаления профиля пользователя
 class DeleteUserProfileView(generics.DestroyAPIView):
-    queryset = User.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = User.objects.all()  # Выборка всех пользователей
+    permission_classes = [permissions.IsAuthenticated]  # Требуется аутентификация
 
     def get_object(self):
+        # Возвращает текущего пользователя
         return self.request.user
 
     def delete(self, request, *args, **kwargs):
-        user = self.get_object()
-        user.delete()
-        return Response({"detail": "User profile deleted."})
+        user = self.get_object()  # Получаем текущего пользователя
+        user.delete()  # Удаляем пользователя из базы данных
+        return Response({"detail": "User profile deleted."}, status=status.HTTP_204_NO_CONTENT)
 
 
-# Представление для получения информации админской панели
+# Представление для отображения админ панели
 class AdminDashboardView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]  # Доступ только для аутентифицированных пользователей
 
     def get(self, request):
+        # Проверка, принадлежит ли пользователь к группе администраторов
         if request.user.groups.filter(name='Administrators').exists():
-            return Response({'msg': 'Добро пожаловать в админ панель'})
+            return Response({'msg': 'Добро пожаловать в админ панель'}, status=status.HTTP_200_OK)
         return Response({'error': 'Нет прав доступа'}, status=status.HTTP_403_FORBIDDEN)
 
-# Представление для получения информации модераторской панели
+
+# Представление для отображения панели модератора
 class ModeratorDashboardView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]  # Доступ только для аутентифицированных пользователей
 
     def get(self, request):
+        # Проверка, принадлежит ли пользователь к группе модераторов
         if request.user.groups.filter(name='Moderators').exists():
-            return Response({'msg': 'Добро пожаловать в модераторскую панель'})
+            return Response({'msg': 'Добро пожаловать в модераторскую панель'}, status=status.HTTP_200_OK)
         return Response({'error': 'Нет прав доступа'}, status=status.HTTP_403_FORBIDDEN)
