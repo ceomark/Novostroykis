@@ -1,9 +1,15 @@
 <template>
-  <div class="login-page">
+  <div>
     <h1>Вход</h1>
-    <form @submit.prevent="loginUser">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Пароль" required />
+    <form @submit.prevent="login">
+      <div>
+        <label for="email">Email</label>
+        <input type="email" v-model="email" id="email" />
+      </div>
+      <div>
+        <label for="password">Пароль</label>
+        <input type="password" v-model="password" id="password" />
+      </div>
       <button type="submit">Войти</button>
     </form>
   </div>
@@ -20,26 +26,17 @@ export default {
     };
   },
   methods: {
-    loginUser() {
-      axios.post('http://127.0.0.1:8000/auth/login/', {
-        email: this.email,
-        password: this.password
-      })
-      .then(response => {
-        localStorage.setItem('access_token', response.data.access);
-        this.$router.push('/profile');
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    async login() {
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/auth/login/', {
+          email: this.email,
+          password: this.password
+        });
+        console.log("Успешный вход:", response.data);
+      } catch (error) {
+        console.error("Ошибка входа:", error);
+      }
     }
   }
-}
+};
 </script>
-
-<style scoped>
-.login-page {
-  padding: 20px;
-  text-align: center;
-}
-</style>

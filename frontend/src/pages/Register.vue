@@ -1,10 +1,19 @@
 <template>
-  <div class="register-page">
+  <div>
     <h1>Регистрация</h1>
-    <form @submit.prevent="registerUser">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="username" type="text" placeholder="Имя пользователя" required />
-      <input v-model="password" type="password" placeholder="Пароль" required />
+    <form @submit.prevent="register">
+      <div>
+        <label for="username">Имя пользователя</label>
+        <input type="text" v-model="username" id="username" />
+      </div>
+      <div>
+        <label for="email">Email</label>
+        <input type="email" v-model="email" id="email" />
+      </div>
+      <div>
+        <label for="password">Пароль</label>
+        <input type="password" v-model="password" id="password" />
+      </div>
       <button type="submit">Зарегистрироваться</button>
     </form>
   </div>
@@ -16,32 +25,24 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      email: '',
       username: '',
+      email: '',
       password: ''
     };
   },
   methods: {
-    registerUser() {
-      axios.post('http://127.0.0.1:8000/auth/register/', {
-        email: this.email,
-        username: this.username,
-        password: this.password
-      })
-      .then(() => {
+    async register() {
+      try {
+        await axios.post('http://127.0.0.1:8000/auth/register/', {
+          username: this.username,
+          email: this.email,
+          password: this.password
+        });
         this.$router.push('/login');
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      } catch (error) {
+        console.error("Ошибка регистрации:", error);
+      }
     }
   }
-}
+};
 </script>
-
-<style scoped>
-.register-page {
-  padding: 20px;
-  text-align: center;
-}
-</style>
