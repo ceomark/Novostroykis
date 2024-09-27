@@ -15,6 +15,10 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from .serializers import PasswordChangeSerializer
+from rest_framework import generics
+from .models import UserProfile
+from .serializers import UserProfileSerializer
 
 
 # Регистрация пользователя
@@ -169,3 +173,11 @@ class ChangePasswordView(generics.UpdateAPIView):
             return Response({"msg": "Пароль успешно изменен."}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user.profile
